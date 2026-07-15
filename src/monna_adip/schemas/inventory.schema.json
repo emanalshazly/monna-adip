@@ -8,11 +8,7 @@
     "evidence": {
       "oneOf": [
         {"type": "string", "minLength": 1},
-        {
-          "type": "array",
-          "minItems": 1,
-          "items": {"type": "string", "minLength": 1}
-        }
+        {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
       ]
     }
   },
@@ -45,9 +41,7 @@
                 "name": {"type": "string", "minLength": 1},
                 "trust": {"enum": ["trusted", "untrusted", "derived", "unknown"]},
                 "origin": {"type": "string"},
-                "security_role": {
-                  "enum": ["content", "identifier", "origin", "authorization", "tool_history", "verification_result", "action_argument"]
-                },
+                "security_role": {"enum": ["content", "identifier", "origin", "authorization", "tool_history", "verification_result", "action_argument"]},
                 "provenance_preserved": {"type": "boolean"},
                 "provenance_evidence": {"$ref": "#/$defs/evidence"}
               },

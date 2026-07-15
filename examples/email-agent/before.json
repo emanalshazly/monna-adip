@@ -1,0 +1,34 @@
+{
+  "system": {
+    "name": "Email reply agent — before",
+    "description": "Reads external email and can send a reply."
+  },
+  "data_objects": [
+    {
+      "id": "email",
+      "format": "json",
+      "structural_isolation": false,
+      "fields": [
+        {"name": "message_id", "trust": "trusted", "origin": "mail backend", "security_role": "identifier"},
+        {"name": "display_sender", "trust": "untrusted", "origin": "message content", "security_role": "origin"},
+        {"name": "body", "trust": "untrusted", "origin": "external sender", "security_role": "content"}
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "send-reply",
+      "impact": "high",
+      "user_confirmation": true,
+      "independent_confirmation_evidence": false,
+      "parameters": [
+        {
+          "name": "recipient",
+          "source": {"object": "email", "field": "display_sender"},
+          "deterministic_validation": false,
+          "provenance_check": false
+        }
+      ]
+    }
+  ]
+}

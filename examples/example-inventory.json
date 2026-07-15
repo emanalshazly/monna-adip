@@ -42,16 +42,18 @@
           "name": "ticket_id",
           "source": {"object": "ticket", "field": "ticket_id"},
           "deterministic_validation": true,
-          "provenance_check": true
+          "validation_evidence": "ticket-id-schema-test",
+          "provenance_check": true,
+          "provenance_evidence": "support-backend-lookup-test"
         },
         {
           "name": "status",
           "source": {"object": "ticket", "field": "recommended_status"},
           "deterministic_validation": true,
+          "validation_evidence": "status-enum-test",
           "provenance_check": false
         }
       ]
     }
   ]
 }
-

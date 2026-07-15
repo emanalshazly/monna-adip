@@ -39,6 +39,16 @@
         }
       ]
     }
+  ],
+  "mitigations": [
+    {
+      "id": "M-1",
+      "control": "Describe the mitigation",
+      "scope": "object-1.record_id",
+      "effect": "reduce",
+      "owner": "security-team",
+      "verification_status": "planned",
+      "verification_evidence": "Replace with a test, log, or policy reference after verification"
+    }
   ]
 }
-

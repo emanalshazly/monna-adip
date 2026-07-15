@@ -1,0 +1,49 @@
+{
+  "system": {
+    "name": "Email reply agent — remediated",
+    "description": "Replies only to a backend-verified sender address."
+  },
+  "data_objects": [
+    {
+      "id": "email",
+      "format": "json",
+      "structural_isolation": true,
+      "structural_isolation_evidence": "serializer-boundary-test/email-v3",
+      "fields": [
+        {"name": "message_id", "trust": "trusted", "origin": "mail backend", "security_role": "identifier"},
+        {"name": "sender_address", "trust": "trusted", "origin": "authenticated mail backend envelope", "security_role": "origin"},
+        {"name": "body", "trust": "untrusted", "origin": "external sender", "security_role": "content"}
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "send-reply",
+      "impact": "high",
+      "user_confirmation": true,
+      "independent_confirmation_evidence": true,
+      "confirmation_evidence": "UI displays authenticated envelope sender from backend lookup",
+      "parameters": [
+        {
+          "name": "recipient",
+          "source": {"object": "email", "field": "sender_address"},
+          "deterministic_validation": true,
+          "validation_evidence": "email-address-parser-test/42",
+          "provenance_check": true,
+          "provenance_evidence": "mail-backend-envelope-lookup-test/19"
+        }
+      ]
+    }
+  ],
+  "mitigations": [
+    {
+      "id": "EMAIL-M1",
+      "control": "server-side envelope lookup",
+      "scope": "email.sender_address",
+      "effect": "prevent",
+      "owner": "messaging-platform",
+      "verification_status": "verified",
+      "verification_evidence": "integration-suite/mail-envelope-19"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # MONNA ADIP Framework Specification
 
-Version: 0.1.0  
-Status: Research Extension 01  
+Version: 0.2.0
+Status: Research Extension 01
 Claim labels: paper-derived statements are cited; original interpretations are
 marked `[MONNA-Analysis-2026]`.
 
