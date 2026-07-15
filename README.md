@@ -1,6 +1,8 @@
 
 # MONNA ADIP™
 
+**English** | [العربية](README_AR.md)
+
 **Agent Data Integrity Protocol**
 Research Extension 01 · Open Core v0.3.0.dev0
 
@@ -36,6 +38,7 @@ See [APE compatibility guidance](docs/APE-COMPATIBILITY.md). The integration is 
 - Python 3.11–3.13 CI matrix
 - Before/after email-agent and code-agent examples
 - Trusted-publishing workflow for PyPI releases
+- Arabic README, quick start, framework guide, examples, and terminology glossary
 
 ## Why this exists
 
@@ -115,6 +118,17 @@ monna-adip generate --from mcp examples/mcp-toolset/manifest.json --output draft
 
 JSON remains the default for backward-compatible piping. See the
 [CLI reference](docs/CLI.md) for formats and exit codes.
+
+## Arabic documentation
+
+- [Arabic README — الواجهة العربية](README_AR.md)
+- [Arabic quick start — البداية السريعة](docs/QUICKSTART_AR.md)
+- [Arabic framework guide — مرجع الإطار](docs/FRAMEWORK_AR.md)
+- [Arabic examples — شرح الأمثلة](docs/EXAMPLES_AR.md)
+- [Arabic–English glossary — قاموس المصطلحات](docs/GLOSSARY_AR.md)
+
+Machine-readable identifiers, JSON keys, trust values, CLI flags, and SARIF
+rule IDs remain in English to preserve one interoperable schema.
 
 ## Example cases
 
