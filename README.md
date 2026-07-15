@@ -44,7 +44,8 @@ MONNA ADIP operationalizes that problem through seven controls:
 7. Mitigation and Verification Mapping
 
 See [the framework specification](docs/FRAMEWORK.md) for the full open-core
-method.
+method, and the [OWASP mapping](docs/OWASP-MAPPING.md) for how each control
+relates to the OWASP Top 10 for Agentic Applications 2026 (ASI01–ASI10).
 
 ## Install
 
@@ -89,6 +90,13 @@ Create SARIF for GitHub code scanning:
 
 ```bash
 monna-adip inventories/ --format sarif --output adip.sarif
+```
+
+Draft an inventory from an MCP tool manifest instead of writing it by hand
+(the draft must pass human review before analysis):
+
+```bash
+monna-adip generate --from mcp examples/mcp-toolset/manifest.json --output draft.json
 ```
 
 JSON remains the default for backward-compatible piping. See the

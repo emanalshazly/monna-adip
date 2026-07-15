@@ -1,15 +1,15 @@
 # Public Roadmap
 
-## Next: inventory generators
+## Inventory generators
 
-The largest adoption barrier is the initial field-level inventory. Planned
-generators will draft, never silently approve, an inventory from public
-interface descriptions.
+The largest adoption barrier is the initial field-level inventory. Generators
+draft, never silently approve, an inventory from public interface
+descriptions.
 
-Proposed command surface:
+The MCP tool-manifest generator shipped with `monna-adip generate --from mcp`;
+see the [CLI reference](CLI.md). Planned command surface for the rest:
 
 ```text
-monna-adip generate --from mcp path/to/manifest.json --output draft.json
 monna-adip generate --from openapi path/to/openapi.json --output draft.json
 ```
 
@@ -21,9 +21,9 @@ Generator rules:
 - Every generated inventory is marked `draft` and must pass human review.
 - Generators do not infer authorization or mitigation sufficiency.
 
-Planned order:
+Remaining order:
 
-1. MCP tool-manifest generator
+1. ~~MCP tool-manifest generator~~ (shipped)
 2. OpenAPI operation and parameter generator
 3. Framework adapters for common agent tool schemas
 4. Diff mode to detect inventory drift across schema versions

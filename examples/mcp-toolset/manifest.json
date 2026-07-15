@@ -1,0 +1,35 @@
+{
+  "tools": [
+    {
+      "name": "send_message",
+      "description": "Send a chat message to a recipient.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "recipient_id": {"type": "string"},
+          "body": {"type": "string"}
+        },
+        "required": ["recipient_id", "body"]
+      }
+    },
+    {
+      "name": "lookup_contact",
+      "description": "Look up a contact record by name.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string"}
+        },
+        "required": ["query"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "contact_id": {"type": "string"},
+          "display_name": {"type": "string"},
+          "match_count": {"type": "integer"}
+        }
+      }
+    }
+  ]
+}
