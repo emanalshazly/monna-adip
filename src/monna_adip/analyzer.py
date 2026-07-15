@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from .version import __version__
+
 TRUST_CLASSES = {"trusted", "untrusted", "derived", "unknown"}
 SECURITY_ROLES = {
     "identifier",
@@ -38,12 +40,38 @@ def _finding(
     }
 
 
+def _has_evidence(value: Any) -> bool:
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, list):
+        return any(_has_evidence(item) for item in value)
+    if isinstance(value, dict):
+        return any(_has_evidence(item) for item in value.values())
+    return value is not None and value is not False
+
+
+def _adip07(location: str, claim: str, evidence_field: str) -> dict[str, str]:
+    return _finding(
+        "ADIP-07",
+        "medium",
+        location,
+        f"Mitigation claim {claim!r} has no reviewable verification evidence.",
+        f"Add {evidence_field} with a test, log, policy reference, or independent review artifact.",
+    )
+
+
 def _index_fields(inventory: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
     index: dict[tuple[str, str], dict[str, Any]] = {}
     for obj in inventory.get("data_objects", []):
+        if not isinstance(obj, dict):
+            continue
         object_id = obj.get("id", "<missing-object-id>")
-        for field in obj.get("fields", []):
-            index[(object_id, field.get("name", "<missing-field-name>"))] = field
+        fields = obj.get("fields", [])
+        if not isinstance(fields, list):
+            continue
+        for field in fields:
+            if isinstance(field, dict):
+                index[(object_id, field.get("name", "<missing-field-name>"))] = field
     return index
 
 
@@ -56,6 +84,8 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
 
     if not isinstance(objects, list) or not isinstance(actions, list):
         return {
+            "framework": "MONNA ADIP Lite",
+            "version": __version__,
             "status": "INCOMPLETE",
             "finding_counts": {"high": 1},
             "findings": [
@@ -67,16 +97,57 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     "Complete the inventory using templates/assessment.json.",
                 )
             ],
+            "disclaimer": "Triage result only; not a security certification.",
         }
 
     field_index = _index_fields(inventory)
 
-    for obj in objects:
+    for object_position, obj in enumerate(objects):
+        if not isinstance(obj, dict):
+            findings.append(
+                _finding(
+                    "ADIP-01",
+                    "high",
+                    f"data_objects.{object_position}",
+                    "Data object must be a JSON object.",
+                    "Describe the object using the published inventory schema.",
+                )
+            )
+            continue
+
         object_id = obj.get("id", "<missing-object-id>")
         fields = obj.get("fields", [])
-        trust_values = {field.get("trust", "unknown") for field in fields}
+        if not isinstance(fields, list):
+            findings.append(
+                _finding(
+                    "ADIP-01",
+                    "high",
+                    f"data_objects.{object_id}.fields",
+                    "Fields must be an array.",
+                    "Describe each field using the published inventory schema.",
+                )
+            )
+            continue
 
-        for field in fields:
+        trust_values = {
+            field.get("trust", "unknown")
+            for field in fields
+            if isinstance(field, dict)
+        }
+
+        for field_position, field in enumerate(fields):
+            if not isinstance(field, dict):
+                findings.append(
+                    _finding(
+                        "ADIP-01",
+                        "high",
+                        f"data_objects.{object_id}.fields.{field_position}",
+                        "Field must be a JSON object.",
+                        "Describe the field using the published inventory schema.",
+                    )
+                )
+                continue
+
             name = field.get("name", "<missing-field-name>")
             trust = field.get("trust", "unknown")
             role = field.get("security_role", "content")
@@ -124,11 +195,17 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                         "Propagate the least-trusted relevant provenance through the transformation.",
                     )
                 )
+            elif (
+                trust == "derived"
+                and field.get("provenance_preserved", False)
+                and not _has_evidence(field.get("provenance_evidence"))
+            ):
+                findings.append(_adip07(location, "provenance_preserved", "provenance_evidence"))
 
         if (
             "trusted" in trust_values
             and ({"untrusted", "unknown"} & trust_values)
-            and obj.get("format", "").lower() in STRUCTURED_FORMATS
+            and str(obj.get("format", "")).lower() in STRUCTURED_FORMATS
             and not obj.get("structural_isolation", False)
         ):
             findings.append(
@@ -140,15 +217,61 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     "Add deterministic isolation, provenance labels, runtime randomization, or independent validation.",
                 )
             )
+        elif obj.get("structural_isolation", False) and not _has_evidence(
+            obj.get("structural_isolation_evidence")
+        ):
+            findings.append(
+                _adip07(
+                    f"data_objects.{object_id}",
+                    "structural_isolation",
+                    "structural_isolation_evidence",
+                )
+            )
 
-    for action in actions:
+    for action_position, action in enumerate(actions):
+        if not isinstance(action, dict):
+            findings.append(
+                _finding(
+                    "ADIP-01",
+                    "high",
+                    f"actions.{action_position}",
+                    "Action must be a JSON object.",
+                    "Describe the action using the published inventory schema.",
+                )
+            )
+            continue
+
         action_id = action.get("id", "<missing-action-id>")
         impact = action.get("impact", "unknown")
         parameters = action.get("parameters", [])
+        if not isinstance(parameters, list):
+            findings.append(
+                _finding(
+                    "ADIP-01",
+                    "high",
+                    f"actions.{action_id}.parameters",
+                    "Parameters must be an array.",
+                    "Describe each parameter using the published inventory schema.",
+                )
+            )
+            continue
 
-        for parameter in parameters:
+        for parameter_position, parameter in enumerate(parameters):
+            if not isinstance(parameter, dict):
+                findings.append(
+                    _finding(
+                        "ADIP-01",
+                        "high",
+                        f"actions.{action_id}.parameters.{parameter_position}",
+                        "Parameter must be a JSON object.",
+                        "Describe the parameter using the published inventory schema.",
+                    )
+                )
+                continue
+
             name = parameter.get("name", "<missing-parameter-name>")
             source = parameter.get("source", {})
+            source = source if isinstance(source, dict) else {}
             key = (source.get("object"), source.get("field"))
             field = field_index.get(key)
             location = f"actions.{action_id}.parameters.{name}"
@@ -180,6 +303,15 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     )
                 )
 
+            if parameter.get("deterministic_validation", False) and not _has_evidence(
+                parameter.get("validation_evidence")
+            ):
+                findings.append(_adip07(location, "deterministic_validation", "validation_evidence"))
+            if parameter.get("provenance_check", False) and not _has_evidence(
+                parameter.get("provenance_evidence")
+            ):
+                findings.append(_adip07(location, "provenance_check", "provenance_evidence"))
+
         if (
             impact in HIGH_IMPACT
             and action.get("user_confirmation", False)
@@ -194,6 +326,32 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     "Show or verify the authoritative source outside the potentially corrupted context.",
                 )
             )
+        elif action.get("independent_confirmation_evidence", False) and not _has_evidence(
+            action.get("confirmation_evidence")
+        ):
+            findings.append(
+                _adip07(
+                    f"actions.{action_id}",
+                    "independent_confirmation_evidence",
+                    "confirmation_evidence",
+                )
+            )
+
+    mitigations = inventory.get("mitigations", [])
+    if isinstance(mitigations, list):
+        for position, mitigation in enumerate(mitigations):
+            if not isinstance(mitigation, dict):
+                continue
+            mitigation_id = mitigation.get("id", position)
+            verified = mitigation.get("verification_status") == "verified"
+            if not verified or not _has_evidence(mitigation.get("verification_evidence")):
+                findings.append(
+                    _adip07(
+                        f"mitigations.{mitigation_id}",
+                        str(mitigation.get("control", "declared mitigation")),
+                        "verification_status='verified' and verification_evidence",
+                    )
+                )
 
     counts = Counter(item["severity"] for item in findings)
     if counts["critical"] or counts["high"]:
@@ -205,10 +363,9 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "framework": "MONNA ADIP Lite",
-        "version": "0.1.0",
+        "version": __version__,
         "status": status,
         "finding_counts": dict(sorted(counts.items())),
         "findings": findings,
         "disclaimer": "Triage result only; not a security certification.",
     }
-

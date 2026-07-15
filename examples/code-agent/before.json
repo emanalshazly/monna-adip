@@ -1,0 +1,32 @@
+{
+  "system": {
+    "name": "Code review agent — before",
+    "description": "Reads pull-request content and can merge a change."
+  },
+  "data_objects": [
+    {
+      "id": "pull-request",
+      "format": "markdown",
+      "structural_isolation": false,
+      "fields": [
+        {"name": "pr_number", "trust": "trusted", "origin": "repository backend", "security_role": "identifier"},
+        {"name": "description", "trust": "untrusted", "origin": "pull-request author", "security_role": "content"},
+        {"name": "claimed_commit_sha", "trust": "untrusted", "origin": "pull-request description", "security_role": "verification_result"}
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "merge-pull-request",
+      "impact": "critical",
+      "parameters": [
+        {
+          "name": "commit_sha",
+          "source": {"object": "pull-request", "field": "claimed_commit_sha"},
+          "deterministic_validation": false,
+          "provenance_check": false
+        }
+      ]
+    }
+  ]
+}

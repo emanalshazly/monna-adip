@@ -1,17 +1,29 @@
 # MONNA ADIP™
 
-**Agent Data Integrity Protocol**  
-Research Extension 01 · Open Core v0.1.0
+**Agent Data Integrity Protocol**
+Research Extension 01 · Open Core v0.2.0
 
-MONNA ADIP is a defensive framework for finding trust-boundary failures inside
-AI-agent data. It audits tool responses, retrieved objects, metadata, and action
-arguments at field level so teams can see when attacker-influenced data may be
-mistaken for trusted agent state.
+MONNA ADIP is a defensive framework and command-line analyzer for finding
+trust-boundary failures inside AI-agent data. It audits tool responses,
+retrieved objects, metadata, mitigation evidence, and action arguments at field
+level so teams can see when attacker-influenced data may be mistaken for
+trusted agent state.
 
 The project is research-informed by Choi et al., *Agent Data Injection Attacks
 are Realistic Threats to AI Agents* (arXiv:2607.05120v1, 2026). It is an
 independent defensive extension by MONNA Consulting™, not an official artifact
 of the paper and not endorsed by its authors.
+
+## What v0.2 adds
+
+- All seven public controls implemented, including ADIP-07 evidence checks
+- Optional JSON Schema validation while keeping the core dependency-free
+- JSON, text, Markdown, and SARIF output
+- Multiple files, directory scanning, and aggregate reports
+- `--version`, `--output`, `--recursive`, and `--validate`
+- Python 3.11–3.13 CI matrix
+- Before/after email-agent and code-agent examples
+- Trusted-publishing workflow for PyPI releases
 
 ## Why this exists
 
@@ -34,35 +46,71 @@ MONNA ADIP operationalizes that problem through seven controls:
 See [the framework specification](docs/FRAMEWORK.md) for the full open-core
 method.
 
-## Quick start
+## Install
 
-Requires Python 3.11 or later and has no runtime dependencies.
+Requires Python 3.11 or later.
+
+From a checkout:
 
 ```bash
 python -m pip install -e .
-python -m monna_adip examples/example-inventory.json
 ```
 
-To start an assessment:
+Add optional standards-based schema validation:
 
-1. Copy `templates/assessment.json`.
-2. Describe data objects at field level.
-3. Map action parameters back to their source fields.
-4. Run the Lite analyzer.
-5. Review findings and add deterministic controls outside the LLM.
+```bash
+python -m pip install -e ".[validation]"
+```
 
-The Lite analyzer is a triage aid. It does not prove that an agent is secure,
-execute attack payloads, or replace architecture review.
+The analyzer core has no runtime dependencies. The `validation` extra installs
+`jsonschema` only for `--validate`.
+
+## Quick start
+
+Human-readable triage:
+
+```bash
+monna-adip examples/example-inventory.json --format text
+```
+
+Validate user input before analysis:
+
+```bash
+monna-adip examples/example-inventory.json --validate --format text
+```
+
+Scan a directory and write a Markdown report:
+
+```bash
+monna-adip examples --recursive --format markdown --output adip-report.md
+```
+
+Create SARIF for GitHub code scanning:
+
+```bash
+monna-adip inventories/ --format sarif --output adip.sarif
+```
+
+JSON remains the default for backward-compatible piping. See the
+[CLI reference](docs/CLI.md) for formats and exit codes.
+
+## Example cases
+
+- [Email agent: before and after](examples/email-agent/)
+- [Code review agent: before and after](examples/code-agent/)
+- [Examples guide](docs/EXAMPLES.md)
+
+The examples are synthetic and defensive. They do not include exploit payloads.
 
 ## Repository map
 
 ```text
-docs/                         Framework and research mapping
-schemas/                      Machine-readable inventory contract
+docs/                         Framework, CLI, examples, and research mapping
+schemas/                      Public machine-readable inventory contract
 templates/                    Blank assessment template
-examples/                     Safe, synthetic example
-src/monna_adip/               Dependency-free Lite analyzer
-tests/                        Analyzer regression tests
+examples/                     Safe synthetic before/after inventories
+src/monna_adip/               Dependency-free analyzer and CLI
+tests/                        Analyzer, validation, CLI, and renderer tests
 ```
 
 ## Open-core boundary
@@ -96,4 +144,3 @@ figures, payloads, benchmark, or source code.
 Original repository materials are licensed under Apache License 2.0. MONNA,
 MONNA ADIP, SecurityFortress, and related names and marks are not granted under
 that license. See [NOTICE](NOTICE).
-

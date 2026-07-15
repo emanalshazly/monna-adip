@@ -1,22 +1,32 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "monna-adip"
-version = "0.1.0"
+version = "0.2.0"
 description = "Defensive field-level trust analysis for AI-agent data paths"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 authors = [{name = "MONNA Consulting"}]
 classifiers = [
   "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Security",
 ]
 dependencies = []
+
+[project.optional-dependencies]
+validation = ["jsonschema>=4.21,<5"]
+
+[project.urls]
+Homepage = "https://github.com/emanalshazly/monna-adip"
+Documentation = "https://github.com/emanalshazly/monna-adip/blob/main/docs/FRAMEWORK.md"
+Issues = "https://github.com/emanalshazly/monna-adip/issues"
 
 [project.scripts]
 monna-adip = "monna_adip.cli:main"
@@ -24,7 +34,9 @@ monna-adip = "monna_adip.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+monna_adip = ["schemas/*.json"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-

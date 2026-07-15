@@ -6,8 +6,10 @@ __pycache__/
 build/
 dist/
 .venv/
+.venv-*/
 venv/
 .idea/
 .vscode/
 .DS_Store
-
+*.sarif
+adip-report.md

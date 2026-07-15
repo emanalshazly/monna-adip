@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use MONNA ADIP, cite this software and the underlying ADI paper."
 title: "MONNA ADIP: Agent Data Integrity Protocol"
 type: software
-version: 0.1.0
+version: 0.2.0
 date-released: 2026-07-15
 authors:
   - name: "MONNA Consulting"

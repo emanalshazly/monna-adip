@@ -1,0 +1,53 @@
+{
+  "system": {
+    "name": "Code review agent — remediated",
+    "description": "Merges only a backend-fetched commit that passed independent verification."
+  },
+  "data_objects": [
+    {
+      "id": "pull-request-metadata",
+      "format": "json",
+      "structural_isolation": true,
+      "structural_isolation_evidence": "repository-api-contract-test/8",
+      "fields": [
+        {"name": "pr_number", "trust": "trusted", "origin": "repository backend", "security_role": "identifier"},
+        {"name": "head_commit_sha", "trust": "trusted", "origin": "repository backend", "security_role": "identifier"}
+      ]
+    },
+    {
+      "id": "pull-request-description",
+      "format": "unstructured",
+      "structural_isolation": false,
+      "fields": [
+        {"name": "description", "trust": "untrusted", "origin": "pull-request author", "security_role": "content"}
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "merge-pull-request",
+      "impact": "critical",
+      "parameters": [
+        {
+          "name": "commit_sha",
+          "source": {"object": "pull-request-metadata", "field": "head_commit_sha"},
+          "deterministic_validation": true,
+          "validation_evidence": "sha-format-and-current-head-test/31",
+          "provenance_check": true,
+          "provenance_evidence": "repository-backend-refetch-test/12"
+        }
+      ]
+    }
+  ],
+  "mitigations": [
+    {
+      "id": "CODE-M1",
+      "control": "independent commit refetch and verification",
+      "scope": "merge-pull-request.commit_sha",
+      "effect": "prevent",
+      "owner": "developer-platform",
+      "verification_status": "verified",
+      "verification_evidence": ["integration-suite/merge-31", "policy-test/protected-branch-12"]
+    }
+  ]
+}
