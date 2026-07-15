@@ -11,6 +11,7 @@
 - Added Python 3.11, 3.12, and 3.13 CI coverage.
 - Added before/after email-agent and code-agent examples.
 - Added a PyPI trusted-publishing workflow for tagged GitHub releases.
+- Added Arabic README, quick start, framework guide, examples, and bilingual glossary.
 
 ## 0.1.0 — 2026-07-15
 
