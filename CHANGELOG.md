@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 — Unreleased
+## 0.2.0 — 2026-07-15
 
 - Added `monna-adip generate --from mcp` to draft an inventory from an MCP tool manifest.
 - Mapped every control to its primary OWASP Agentic Applications 2026 vector, with ASI tags in SARIF rule metadata.
