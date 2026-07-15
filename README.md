@@ -44,7 +44,8 @@ MONNA ADIP operationalizes that problem through seven controls:
 7. Mitigation and Verification Mapping
 
 See [the framework specification](docs/FRAMEWORK.md) for the full open-core
-method.
+method, and the [OWASP mapping](docs/OWASP-MAPPING.md) for how each control
+relates to the OWASP Top 10 for Agentic Applications 2026 (ASI01–ASI10).
 
 ## Install
 

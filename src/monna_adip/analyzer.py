@@ -30,13 +30,19 @@ def _finding(
     location: str,
     message: str,
     recommendation: str,
+    basis: str = "declared",
 ) -> dict[str, str]:
+    # Calibration honesty: every finding states its epistemic basis.
+    # "structural" = observed directly in the inventory document;
+    # "declared" = derived from trust/impact labels the author declared.
+    # The analyzer never inspects the running system itself.
     return {
         "id": finding_id,
         "severity": severity,
         "location": location,
         "message": message,
         "recommendation": recommendation,
+        "basis": basis,
     }
 
 
@@ -95,6 +101,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     "inventory",
                     "Inventory must contain data_objects and actions arrays.",
                     "Complete the inventory using templates/assessment.json.",
+                    basis="structural",
                 )
             ],
             "disclaimer": "Triage result only; not a security certification.",
@@ -111,6 +118,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     f"data_objects.{object_position}",
                     "Data object must be a JSON object.",
                     "Describe the object using the published inventory schema.",
+                    basis="structural",
                 )
             )
             continue
@@ -125,6 +133,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     f"data_objects.{object_id}.fields",
                     "Fields must be an array.",
                     "Describe each field using the published inventory schema.",
+                    basis="structural",
                 )
             )
             continue
@@ -144,6 +153,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                         f"data_objects.{object_id}.fields.{field_position}",
                         "Field must be a JSON object.",
                         "Describe the field using the published inventory schema.",
+                        basis="structural",
                     )
                 )
                 continue
@@ -161,6 +171,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                         location,
                         f"Unsupported trust class: {trust!r}.",
                         "Use trusted, untrusted, derived, or unknown and document evidence.",
+                        basis="structural",
                     )
                 )
             elif trust == "unknown" and role in SECURITY_ROLES:
@@ -237,6 +248,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     f"actions.{action_position}",
                     "Action must be a JSON object.",
                     "Describe the action using the published inventory schema.",
+                    basis="structural",
                 )
             )
             continue
@@ -252,6 +264,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     f"actions.{action_id}.parameters",
                     "Parameters must be an array.",
                     "Describe each parameter using the published inventory schema.",
+                    basis="structural",
                 )
             )
             continue
@@ -265,6 +278,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                         f"actions.{action_id}.parameters.{parameter_position}",
                         "Parameter must be a JSON object.",
                         "Describe the parameter using the published inventory schema.",
+                        basis="structural",
                     )
                 )
                 continue
@@ -284,6 +298,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                         location,
                         "Action parameter source cannot be resolved to an inventoried field.",
                         "Map the parameter to an exact object and field.",
+                        basis="structural",
                     )
                 )
                 continue

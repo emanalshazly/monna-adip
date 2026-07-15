@@ -47,6 +47,14 @@ The v0.2 aggregate retains `status`, `finding_counts`, and `findings` at the
 top level. Every finding now includes `source`, and the report adds
 `inventory_count` plus per-inventory summaries.
 
+Every finding also carries a `basis` label stating its epistemic ground:
+`structural` means the analyzer observed the problem directly in the
+inventory document (missing arrays, malformed entries, invalid trust
+classes, unresolvable sources); `declared` means the finding is derived
+from trust, impact, or evidence labels the inventory author declared. The
+analyzer never inspects the running system, so no finding is ever a
+measured runtime fact.
+
 ## Generating a draft inventory
 
 `monna-adip generate --from mcp` drafts an inventory from an MCP tool manifest
@@ -81,3 +89,7 @@ Exit codes: `0` on success, `3` on manifest or write errors.
 
 Treat the analyzer as triage, not certification. A SARIF result identifies an
 architecture evidence gap; it is not proof of exploitability.
+
+SARIF rule metadata tags each control with its primary OWASP Top 10 for
+Agentic Applications 2026 vector (`external/owasp-asi/ASI0X`); see the
+[OWASP mapping](OWASP-MAPPING.md).

@@ -15,6 +15,19 @@ RULE_DESCRIPTIONS = {
     "ADIP-07": "Mitigation lacks verification evidence",
 }
 
+# Primary OWASP Top 10 for Agentic Applications 2026 vector per control.
+# The mapping is [MONNA-Analysis-2026]; see docs/OWASP-MAPPING.md.
+# ADIP-07 is cross-cutting and carries no ASI tag.
+OWASP_ASI_2026 = {
+    "ADIP-01": ["ASI06"],
+    "ADIP-02": ["ASI03"],
+    "ADIP-03": ["ASI02"],
+    "ADIP-04": ["ASI01"],
+    "ADIP-05": ["ASI09"],
+    "ADIP-06": ["ASI06"],
+    "ADIP-07": [],
+}
+
 
 def render_json(report: dict[str, Any], compact: bool = False) -> str:
     if compact:
@@ -92,15 +105,22 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 def build_sarif(report: dict[str, Any]) -> dict[str, Any]:
     used_ids = sorted({finding["id"] for finding in report.get("findings", [])})
-    rules = [
-        {
-            "id": rule_id,
-            "name": rule_id.replace("-", ""),
-            "shortDescription": {"text": RULE_DESCRIPTIONS[rule_id]},
-            "helpUri": "https://github.com/emanalshazly/monna-adip/blob/main/docs/FRAMEWORK.md",
-        }
-        for rule_id in used_ids
-    ]
+    rules = []
+    for rule_id in used_ids:
+        asi_vectors = OWASP_ASI_2026.get(rule_id, [])
+        rules.append(
+            {
+                "id": rule_id,
+                "name": rule_id.replace("-", ""),
+                "shortDescription": {"text": RULE_DESCRIPTIONS[rule_id]},
+                "helpUri": "https://github.com/emanalshazly/monna-adip/blob/main/docs/FRAMEWORK.md",
+                "properties": {
+                    "tags": ["security"]
+                    + [f"external/owasp-asi/{vector}" for vector in asi_vectors],
+                    "owaspAsi2026": asi_vectors,
+                },
+            }
+        )
     level_map = {"critical": "error", "high": "error", "medium": "warning", "low": "note"}
     results = []
     for finding in report.get("findings", []):
@@ -120,6 +140,7 @@ def build_sarif(report: dict[str, Any]) -> dict[str, Any]:
                 "properties": {
                     "severity": finding["severity"],
                     "recommendation": finding["recommendation"],
+                    "basis": finding.get("basis", "declared"),
                 },
             }
         )
