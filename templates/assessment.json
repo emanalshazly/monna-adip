@@ -1,0 +1,44 @@
+{
+  "system": {
+    "name": "replace-with-agent-name",
+    "description": "Describe what the agent reads, decides, and can change."
+  },
+  "data_objects": [
+    {
+      "id": "object-1",
+      "format": "json",
+      "structural_isolation": false,
+      "fields": [
+        {
+          "name": "record_id",
+          "trust": "unknown",
+          "origin": "",
+          "security_role": "identifier"
+        },
+        {
+          "name": "body",
+          "trust": "untrusted",
+          "origin": "external user content",
+          "security_role": "content"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "action-1",
+      "impact": "high",
+      "user_confirmation": true,
+      "independent_confirmation_evidence": false,
+      "parameters": [
+        {
+          "name": "record_id",
+          "source": {"object": "object-1", "field": "record_id"},
+          "deterministic_validation": false,
+          "provenance_check": false
+        }
+      ]
+    }
+  ]
+}
+

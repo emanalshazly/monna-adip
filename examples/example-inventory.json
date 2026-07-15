@@ -1,0 +1,57 @@
+{
+  "system": {
+    "name": "Synthetic support-ticket agent",
+    "description": "Reads tickets and can close a ticket after review."
+  },
+  "data_objects": [
+    {
+      "id": "ticket",
+      "format": "json",
+      "structural_isolation": false,
+      "fields": [
+        {
+          "name": "ticket_id",
+          "trust": "trusted",
+          "origin": "support service backend",
+          "security_role": "identifier"
+        },
+        {
+          "name": "comment",
+          "trust": "untrusted",
+          "origin": "external ticket author",
+          "security_role": "content"
+        },
+        {
+          "name": "recommended_status",
+          "trust": "derived",
+          "origin": "LLM summary of ticket content",
+          "security_role": "action_argument",
+          "provenance_preserved": false
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "close-ticket",
+      "impact": "high",
+      "user_confirmation": true,
+      "independent_confirmation_evidence": false,
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "source": {"object": "ticket", "field": "ticket_id"},
+          "deterministic_validation": true,
+          "provenance_check": true
+        },
+        {
+          "name": "status",
+          "source": {"object": "ticket", "field": "recommended_status"},
+          "deterministic_validation": true,
+          "provenance_check": false
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use MONNA ADIP, cite this software and the underlying ADI paper."
+title: "MONNA ADIP: Agent Data Integrity Protocol"
+type: software
+version: 0.1.0
+date-released: 2026-07-15
+authors:
+  - name: "MONNA Consulting"
+license: Apache-2.0
+references:
+  - type: article
+    title: "Agent Data Injection Attacks are Realistic Threats to AI Agents"
+    authors:
+      - family-names: Choi
+        given-names: Woohyuk
+      - family-names: Kim
+        given-names: Juhee
+      - family-names: Kang
+        given-names: Taehyun
+      - family-names: Jeong
+        given-names: Jihyeon
+      - family-names: Xing
+        given-names: Luyi
+      - family-names: Lee
+        given-names: Byoungyoung
+    year: 2026
+    doi: 10.48550/arXiv.2607.05120
+
