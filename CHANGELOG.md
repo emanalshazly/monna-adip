@@ -2,6 +2,7 @@
 
 ## 0.2.0 — Unreleased
 
+- Added `monna-adip generate --from mcp` to draft an inventory from an MCP tool manifest.
 - Implemented ADIP-07 checks for mitigation claims without verification evidence.
 - Added optional Draft 2020-12 JSON Schema validation through `jsonschema`.
 - Added text, Markdown, and SARIF output alongside JSON.

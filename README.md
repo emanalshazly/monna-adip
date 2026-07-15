@@ -91,6 +91,13 @@ Create SARIF for GitHub code scanning:
 monna-adip inventories/ --format sarif --output adip.sarif
 ```
 
+Draft an inventory from an MCP tool manifest instead of writing it by hand
+(the draft must pass human review before analysis):
+
+```bash
+monna-adip generate --from mcp examples/mcp-toolset/manifest.json --output draft.json
+```
+
 JSON remains the default for backward-compatible piping. See the
 [CLI reference](docs/CLI.md) for formats and exit codes.
 

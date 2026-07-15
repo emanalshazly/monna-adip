@@ -4,6 +4,7 @@
 
 ```text
 monna-adip INVENTORY [INVENTORY ...] [options]
+monna-adip generate --from mcp MANIFEST [--output PATH] [--compact]
 ```
 
 An input can be a JSON inventory file or a directory. Directories include
@@ -45,6 +46,28 @@ The exit code describes the aggregate status across all scanned inventories.
 The v0.2 aggregate retains `status`, `finding_counts`, and `findings` at the
 top level. Every finding now includes `source`, and the report adds
 `inventory_count` plus per-inventory summaries.
+
+## Generating a draft inventory
+
+`monna-adip generate --from mcp` drafts an inventory from an MCP tool manifest
+(the result of a `tools/list` call, a full JSON-RPC response, or a bare tools
+array):
+
+```bash
+monna-adip generate --from mcp examples/mcp-toolset/manifest.json --output draft.json
+```
+
+Generator rules (see the [roadmap](ROADMAP.md)):
+
+- Trust labels default to `unknown`; descriptions and free-text values default
+  to `untrusted`.
+- Action impact defaults conservatively to `high` and must be reviewed.
+- Every tool parameter maps to an `agent-context` field with an unmapped
+  origin, so analysis of an unreviewed draft intentionally reports `EXPOSED`
+  ADIP-01 findings until a human maps each argument to its true source.
+- The draft is marked `"draft": true` and is not an assessment result.
+
+Exit codes: `0` on success, `3` on manifest or write errors.
 
 ## SARIF upload
 
