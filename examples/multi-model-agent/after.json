@@ -1,0 +1,109 @@
+{
+  "system": {
+    "name": "multi-model-review-agent-after",
+    "description": "A remediated multi-model workflow with provenance-preserving handoff and an independent policy gate."
+  },
+  "threat_context": {
+    "cia_impacts": [
+      "confidentiality",
+      "integrity"
+    ],
+    "attack_paths": [
+      "indirect",
+      "multi_model"
+    ],
+    "external_references": [
+      {
+        "namespace": "hiddenlayer-ape",
+        "version": "2026-06-18",
+        "source_url": "https://github.com/hiddenlayerai/ape-taxonomy",
+        "ids": [
+          "HLT07.04",
+          "HLT08.01",
+          "HLT08.02"
+        ]
+      }
+    ]
+  },
+  "data_objects": [
+    {
+      "id": "retrieved-document",
+      "format": "json",
+      "structural_isolation": true,
+      "structural_isolation_evidence": "retrieval-envelope-test-1",
+      "fields": [
+        {
+          "name": "document_id",
+          "trust": "trusted",
+          "origin": "retrieval gateway",
+          "security_role": "identifier"
+        },
+        {
+          "name": "body",
+          "trust": "untrusted",
+          "origin": "external retrieval corpus",
+          "security_role": "content"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "publish-review",
+      "impact": "high",
+      "verification": {
+        "type": "external_service",
+        "verifier": "policy-engine",
+        "independent": true,
+        "evidence": "policy-engine-integration-test-8"
+      },
+      "parameters": [
+        {
+          "name": "document_id",
+          "source": {
+            "object": "retrieved-document",
+            "field": "document_id"
+          },
+          "deterministic_validation": true,
+          "validation_evidence": "document-id-schema-test-2",
+          "provenance_check": true,
+          "provenance_evidence": "retrieval-gateway-signature-test-3"
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "id": "review-context",
+      "source_fields": [
+        {
+          "object": "retrieved-document",
+          "field": "body"
+        }
+      ],
+      "consumer": {
+        "type": "llm",
+        "id": "review-model"
+      },
+      "sink_type": "forward_to_model",
+      "impact": "high",
+      "provenance_preserved": true,
+      "deterministic_validation": true,
+      "independent_verification": true,
+      "provenance_evidence": "downstream-context-label-test-4",
+      "validation_evidence": "review-package-schema-test-5",
+      "verification_evidence": "policy-gate-test-6"
+    }
+  ],
+  "mitigations": [
+    {
+      "id": "M-policy",
+      "control": "Independent policy gate",
+      "scope": "actions.publish-review and outputs.review-context",
+      "effect": "prevent",
+      "owner": "agent-platform",
+      "verification_status": "verified",
+      "verification_evidence": "multi-model-policy-regression-test-9"
+    }
+  ]
+}

@@ -22,6 +22,8 @@ SECURITY_ROLES = {
 }
 HIGH_IMPACT = {"high", "critical"}
 STRUCTURED_FORMATS = {"json", "xml", "markdown", "dom", "custom"}
+CIA_IMPACTS = {"confidentiality", "integrity", "availability"}
+ATTACK_PATHS = {"direct", "indirect", "retrieval", "multi_model", "mixed"}
 
 
 def _finding(
@@ -81,10 +83,74 @@ def _index_fields(inventory: dict[str, Any]) -> dict[tuple[str, str], dict[str, 
     return index
 
 
+def _normalize_threat_context(inventory: dict[str, Any]) -> dict[str, Any]:
+    """Return safe, reportable threat metadata without importing a taxonomy."""
+
+    context = inventory.get("threat_context", {})
+    if not isinstance(context, dict):
+        return {"cia_impacts": [], "attack_paths": [], "external_references": []}
+
+    impacts = sorted(
+        {
+            item
+            for item in context.get("cia_impacts", [])
+            if isinstance(item, str) and item in CIA_IMPACTS
+        }
+    )
+    attack_paths = sorted(
+        {
+            item
+            for item in context.get("attack_paths", [])
+            if isinstance(item, str) and item in ATTACK_PATHS
+        }
+    )
+    references: list[dict[str, Any]] = []
+    for reference in context.get("external_references", []):
+        if not isinstance(reference, dict):
+            continue
+        namespace = reference.get("namespace")
+        ids = reference.get("ids")
+        if (
+            not isinstance(namespace, str)
+            or not namespace.strip()
+            or not isinstance(ids, list)
+        ):
+            continue
+        normalized_ids = sorted(
+            {item for item in ids if isinstance(item, str) and item.strip()}
+        )
+        if not normalized_ids:
+            continue
+        normalized: dict[str, Any] = {
+            "namespace": namespace.strip(),
+            "ids": normalized_ids,
+        }
+        for key in ("version", "source_url"):
+            value = reference.get(key)
+            if isinstance(value, str) and value.strip():
+                normalized[key] = value.strip()
+        references.append(normalized)
+
+    references.sort(
+        key=lambda item: (
+            item["namespace"],
+            item.get("version", ""),
+            item.get("source_url", ""),
+            tuple(item["ids"]),
+        )
+    )
+    return {
+        "cia_impacts": impacts,
+        "attack_paths": attack_paths,
+        "external_references": references,
+    }
+
+
 def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
     """Return deterministic triage findings for an ADIP inventory."""
 
     findings: list[dict[str, str]] = []
+    threat_context = _normalize_threat_context(inventory)
     objects = inventory.get("data_objects")
     actions = inventory.get("actions")
 
@@ -94,6 +160,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
             "version": __version__,
             "status": "INCOMPLETE",
             "finding_counts": {"high": 1},
+            "threat_context": threat_context,
             "findings": [
                 _finding(
                     "ADIP-01",
@@ -139,9 +206,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
             continue
 
         trust_values = {
-            field.get("trust", "unknown")
-            for field in fields
-            if isinstance(field, dict)
+            field.get("trust", "unknown") for field in fields if isinstance(field, dict)
         }
 
         for field_position, field in enumerate(fields):
@@ -211,7 +276,9 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                 and field.get("provenance_preserved", False)
                 and not _has_evidence(field.get("provenance_evidence"))
             ):
-                findings.append(_adip07(location, "provenance_preserved", "provenance_evidence"))
+                findings.append(
+                    _adip07(location, "provenance_preserved", "provenance_evidence")
+                )
 
         if (
             "trusted" in trust_values
@@ -321,14 +388,20 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
             if parameter.get("deterministic_validation", False) and not _has_evidence(
                 parameter.get("validation_evidence")
             ):
-                findings.append(_adip07(location, "deterministic_validation", "validation_evidence"))
+                findings.append(
+                    _adip07(location, "deterministic_validation", "validation_evidence")
+                )
             if parameter.get("provenance_check", False) and not _has_evidence(
                 parameter.get("provenance_evidence")
             ):
-                findings.append(_adip07(location, "provenance_check", "provenance_evidence"))
+                findings.append(
+                    _adip07(location, "provenance_check", "provenance_evidence")
+                )
 
+        verification = action.get("verification")
         if (
-            impact in HIGH_IMPACT
+            not isinstance(verification, dict)
+            and impact in HIGH_IMPACT
             and action.get("user_confirmation", False)
             and not action.get("independent_confirmation_evidence", False)
         ):
@@ -341,9 +414,9 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                     "Show or verify the authoritative source outside the potentially corrupted context.",
                 )
             )
-        elif action.get("independent_confirmation_evidence", False) and not _has_evidence(
-            action.get("confirmation_evidence")
-        ):
+        elif action.get(
+            "independent_confirmation_evidence", False
+        ) and not _has_evidence(action.get("confirmation_evidence")):
             findings.append(
                 _adip07(
                     f"actions.{action_id}",
@@ -352,6 +425,125 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                 )
             )
 
+        if isinstance(verification, dict):
+            if impact in HIGH_IMPACT and not verification.get("independent", False):
+                findings.append(
+                    _finding(
+                        "ADIP-05",
+                        "high",
+                        f"actions.{action_id}.verification",
+                        "High-impact action relies on a non-independent verification step.",
+                        "Use an independently sourced deterministic, human, or external verification path.",
+                    )
+                )
+            elif verification.get("independent", False) and not _has_evidence(
+                verification.get("evidence")
+            ):
+                findings.append(
+                    _adip07(
+                        f"actions.{action_id}.verification",
+                        "independent verification",
+                        "verification.evidence",
+                    )
+                )
+
+    outputs = inventory.get("outputs", [])
+    if isinstance(outputs, list):
+        for output_position, output in enumerate(outputs):
+            if not isinstance(output, dict):
+                findings.append(
+                    _finding(
+                        "ADIP-01",
+                        "high",
+                        f"outputs.{output_position}",
+                        "Output sink must be a JSON object.",
+                        "Describe the output using the published inventory schema.",
+                        basis="structural",
+                    )
+                )
+                continue
+
+            output_id = output.get("id", output_position)
+            location = f"outputs.{output_id}"
+            sources = output.get("source_fields", [])
+            if not isinstance(sources, list) or not sources:
+                findings.append(
+                    _finding(
+                        "ADIP-01",
+                        "high",
+                        f"{location}.source_fields",
+                        "Output sink must identify at least one source field.",
+                        "Map the output to every inventoried object and field that influences it.",
+                        basis="structural",
+                    )
+                )
+            else:
+                for source_position, source in enumerate(sources):
+                    source = source if isinstance(source, dict) else {}
+                    key = (source.get("object"), source.get("field"))
+                    if key not in field_index:
+                        findings.append(
+                            _finding(
+                                "ADIP-01",
+                                "high",
+                                f"{location}.source_fields.{source_position}",
+                                "Output source cannot be resolved to an inventoried field.",
+                                "Map the output to an exact object and field.",
+                                basis="structural",
+                            )
+                        )
+
+            consumer = output.get("consumer", {})
+            consumer = consumer if isinstance(consumer, dict) else {}
+            if consumer.get("type") == "llm" and not output.get(
+                "provenance_preserved", False
+            ):
+                findings.append(
+                    _finding(
+                        "ADIP-06",
+                        "high",
+                        location,
+                        "Output passed to another model does not preserve source provenance.",
+                        "Carry field-level trust and provenance into the downstream model context.",
+                    )
+                )
+            elif output.get("provenance_preserved", False) and not _has_evidence(
+                output.get("provenance_evidence")
+            ):
+                findings.append(
+                    _adip07(location, "provenance_preserved", "provenance_evidence")
+                )
+
+            if output.get("impact") in HIGH_IMPACT and not (
+                output.get("deterministic_validation", False)
+                and output.get("independent_verification", False)
+            ):
+                severity = "critical" if output.get("impact") == "critical" else "high"
+                findings.append(
+                    _finding(
+                        "ADIP-03",
+                        severity,
+                        location,
+                        "High-impact output reaches a sink without deterministic validation and independent verification.",
+                        "Validate the output deterministically and verify its authority before the sink consumes it.",
+                    )
+                )
+
+            if output.get("deterministic_validation", False) and not _has_evidence(
+                output.get("validation_evidence")
+            ):
+                findings.append(
+                    _adip07(location, "deterministic_validation", "validation_evidence")
+                )
+            if output.get("independent_verification", False) and not _has_evidence(
+                output.get("verification_evidence")
+            ):
+                findings.append(
+                    _adip07(
+                        location, "independent_verification", "verification_evidence"
+                    )
+                )
+
     mitigations = inventory.get("mitigations", [])
     if isinstance(mitigations, list):
         for position, mitigation in enumerate(mitigations):
@@ -359,7 +551,9 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
                 continue
             mitigation_id = mitigation.get("id", position)
             verified = mitigation.get("verification_status") == "verified"
-            if not verified or not _has_evidence(mitigation.get("verification_evidence")):
+            if not verified or not _has_evidence(
+                mitigation.get("verification_evidence")
+            ):
                 findings.append(
                     _adip07(
                         f"mitigations.{mitigation_id}",
@@ -381,6 +575,7 @@ def analyze_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
         "version": __version__,
         "status": status,
         "finding_counts": dict(sorted(counts.items())),
+        "threat_context": threat_context,
         "findings": findings,
         "disclaimer": "Triage result only; not a security certification.",
     }

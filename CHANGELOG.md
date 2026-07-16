@@ -1,4 +1,16 @@
+
 # Changelog
+
+## 0.3.0.dev0 — Unreleased
+
+- Added optional CIA impacts, attack paths, and generic external taxonomy references.
+- Added output/sink inventories with exact source-field dependencies.
+- Extended ADIP-03 to high-impact output sinks.
+- Extended ADIP-05 to non-independent verification, including LLM judges.
+- Extended ADIP-06 to provenance loss across downstream model boundaries.
+- Preserved threat context in text, Markdown, JSON, aggregate reports, and SARIF.
+- Added independent APE Taxonomy compatibility guidance without redistributing its content.
+- Added safe multi-model before/after examples and focused regression tests.
 
 ## 0.2.0 — 2026-07-15
 

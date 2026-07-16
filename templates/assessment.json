@@ -1,7 +1,16 @@
 {
   "system": {
     "name": "replace-with-agent-name",
-    "description": "Describe what the agent reads, decides, and can change."
+    "description": "Describe what the agent reads, decides, emits, and can change."
+  },
+  "threat_context": {
+    "cia_impacts": [
+      "integrity"
+    ],
+    "attack_paths": [
+      "indirect"
+    ],
+    "external_references": []
   },
   "data_objects": [
     {
@@ -30,14 +39,42 @@
       "impact": "high",
       "user_confirmation": true,
       "independent_confirmation_evidence": false,
+      "verification": {
+        "type": "llm_judge",
+        "verifier": "replace-with-verifier",
+        "independent": false
+      },
       "parameters": [
         {
           "name": "record_id",
-          "source": {"object": "object-1", "field": "record_id"},
+          "source": {
+            "object": "object-1",
+            "field": "record_id"
+          },
           "deterministic_validation": false,
           "provenance_check": false
         }
       ]
+    }
+  ],
+  "outputs": [
+    {
+      "id": "output-1",
+      "source_fields": [
+        {
+          "object": "object-1",
+          "field": "body"
+        }
+      ],
+      "consumer": {
+        "type": "llm",
+        "id": "replace-with-consumer"
+      },
+      "sink_type": "forward_to_model",
+      "impact": "high",
+      "provenance_preserved": false,
+      "deterministic_validation": false,
+      "independent_verification": false
     }
   ],
   "mitigations": [

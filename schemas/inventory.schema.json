@@ -3,53 +3,259 @@
   "$id": "https://github.com/emanalshazly/monna-adip/blob/main/schemas/inventory.schema.json",
   "title": "MONNA ADIP Inventory",
   "type": "object",
-  "required": ["system", "data_objects", "actions"],
+  "required": [
+    "system",
+    "data_objects",
+    "actions"
+  ],
   "$defs": {
     "evidence": {
       "oneOf": [
-        {"type": "string", "minLength": 1},
+        {
+          "type": "string",
+          "minLength": 1
+        },
         {
           "type": "array",
           "minItems": 1,
-          "items": {"type": "string", "minLength": 1}
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       ]
+    },
+    "fieldSource": {
+      "type": "object",
+      "required": [
+        "object",
+        "field"
+      ],
+      "properties": {
+        "object": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "externalReference": {
+      "type": "object",
+      "required": [
+        "namespace",
+        "ids"
+      ],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9._-]+$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "type",
+        "independent"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "human",
+            "deterministic",
+            "llm_judge",
+            "external_service"
+          ]
+        },
+        "verifier": {
+          "type": "string",
+          "minLength": 1
+        },
+        "independent": {
+          "type": "boolean"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence"
+        }
+      },
+      "additionalProperties": false
+    },
+    "consumer": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "user",
+            "tool",
+            "llm",
+            "renderer",
+            "storage",
+            "external_system"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
     }
   },
   "properties": {
     "system": {
       "type": "object",
-      "required": ["name", "description"],
+      "required": [
+        "name",
+        "description"
+      ],
       "properties": {
-        "name": {"type": "string", "minLength": 1},
-        "description": {"type": "string", "minLength": 1}
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
       },
       "additionalProperties": true
+    },
+    "threat_context": {
+      "type": "object",
+      "properties": {
+        "cia_impacts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "confidentiality",
+              "integrity",
+              "availability"
+            ]
+          }
+        },
+        "attack_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "direct",
+              "indirect",
+              "retrieval",
+              "multi_model",
+              "mixed"
+            ]
+          }
+        },
+        "external_references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/externalReference"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "data_objects": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "format", "fields"],
+        "required": [
+          "id",
+          "format",
+          "fields"
+        ],
         "properties": {
-          "id": {"type": "string", "minLength": 1},
-          "format": {"enum": ["json", "xml", "markdown", "dom", "custom", "unstructured"]},
-          "structural_isolation": {"type": "boolean"},
-          "structural_isolation_evidence": {"$ref": "#/$defs/evidence"},
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "format": {
+            "enum": [
+              "json",
+              "xml",
+              "markdown",
+              "dom",
+              "custom",
+              "unstructured"
+            ]
+          },
+          "structural_isolation": {
+            "type": "boolean"
+          },
+          "structural_isolation_evidence": {
+            "$ref": "#/$defs/evidence"
+          },
           "fields": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "trust", "origin", "security_role"],
+              "required": [
+                "name",
+                "trust",
+                "origin",
+                "security_role"
+              ],
               "properties": {
-                "name": {"type": "string", "minLength": 1},
-                "trust": {"enum": ["trusted", "untrusted", "derived", "unknown"]},
-                "origin": {"type": "string"},
-                "security_role": {
-                  "enum": ["content", "identifier", "origin", "authorization", "tool_history", "verification_result", "action_argument"]
+                "name": {
+                  "type": "string",
+                  "minLength": 1
                 },
-                "provenance_preserved": {"type": "boolean"},
-                "provenance_evidence": {"$ref": "#/$defs/evidence"}
+                "trust": {
+                  "enum": [
+                    "trusted",
+                    "untrusted",
+                    "derived",
+                    "unknown"
+                  ]
+                },
+                "origin": {
+                  "type": "string"
+                },
+                "security_role": {
+                  "enum": [
+                    "content",
+                    "identifier",
+                    "origin",
+                    "authorization",
+                    "tool_history",
+                    "verification_result",
+                    "action_argument"
+                  ]
+                },
+                "provenance_preserved": {
+                  "type": "boolean"
+                },
+                "provenance_evidence": {
+                  "$ref": "#/$defs/evidence"
+                }
               },
               "additionalProperties": true
             }
@@ -62,36 +268,133 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "impact", "parameters"],
+        "required": [
+          "id",
+          "impact",
+          "parameters"
+        ],
         "properties": {
-          "id": {"type": "string", "minLength": 1},
-          "impact": {"enum": ["low", "medium", "high", "critical"]},
-          "user_confirmation": {"type": "boolean"},
-          "independent_confirmation_evidence": {"type": "boolean"},
-          "confirmation_evidence": {"$ref": "#/$defs/evidence"},
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "impact": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "user_confirmation": {
+            "type": "boolean"
+          },
+          "independent_confirmation_evidence": {
+            "type": "boolean"
+          },
+          "confirmation_evidence": {
+            "$ref": "#/$defs/evidence"
+          },
+          "verification": {
+            "$ref": "#/$defs/verification"
+          },
           "parameters": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["name", "source"],
+              "required": [
+                "name",
+                "source"
+              ],
               "properties": {
-                "name": {"type": "string", "minLength": 1},
-                "source": {
-                  "type": "object",
-                  "required": ["object", "field"],
-                  "properties": {
-                    "object": {"type": "string", "minLength": 1},
-                    "field": {"type": "string", "minLength": 1}
-                  },
-                  "additionalProperties": false
+                "name": {
+                  "type": "string",
+                  "minLength": 1
                 },
-                "deterministic_validation": {"type": "boolean"},
-                "validation_evidence": {"$ref": "#/$defs/evidence"},
-                "provenance_check": {"type": "boolean"},
-                "provenance_evidence": {"$ref": "#/$defs/evidence"}
+                "source": {
+                  "$ref": "#/$defs/fieldSource"
+                },
+                "deterministic_validation": {
+                  "type": "boolean"
+                },
+                "validation_evidence": {
+                  "$ref": "#/$defs/evidence"
+                },
+                "provenance_check": {
+                  "type": "boolean"
+                },
+                "provenance_evidence": {
+                  "$ref": "#/$defs/evidence"
+                }
               },
               "additionalProperties": true
             }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "source_fields",
+          "consumer",
+          "sink_type",
+          "impact"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/$defs/fieldSource"
+            }
+          },
+          "consumer": {
+            "$ref": "#/$defs/consumer"
+          },
+          "sink_type": {
+            "enum": [
+              "display",
+              "parse",
+              "execute",
+              "store",
+              "transmit",
+              "forward_to_model"
+            ]
+          },
+          "impact": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "provenance_preserved": {
+            "type": "boolean"
+          },
+          "provenance_evidence": {
+            "$ref": "#/$defs/evidence"
+          },
+          "deterministic_validation": {
+            "type": "boolean"
+          },
+          "validation_evidence": {
+            "$ref": "#/$defs/evidence"
+          },
+          "independent_verification": {
+            "type": "boolean"
+          },
+          "verification_evidence": {
+            "$ref": "#/$defs/evidence"
           }
         },
         "additionalProperties": true
@@ -101,15 +404,47 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "control", "scope", "verification_status"],
+        "required": [
+          "id",
+          "control",
+          "scope",
+          "verification_status"
+        ],
         "properties": {
-          "id": {"type": "string", "minLength": 1},
-          "control": {"type": "string", "minLength": 1},
-          "scope": {"type": "string", "minLength": 1},
-          "effect": {"enum": ["prevent", "reduce", "detect", "recover"]},
-          "owner": {"type": "string", "minLength": 1},
-          "verification_status": {"enum": ["missing", "planned", "verified"]},
-          "verification_evidence": {"$ref": "#/$defs/evidence"}
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "control": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "effect": {
+            "enum": [
+              "prevent",
+              "reduce",
+              "detect",
+              "recover"
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verification_status": {
+            "enum": [
+              "missing",
+              "planned",
+              "verified"
+            ]
+          },
+          "verification_evidence": {
+            "$ref": "#/$defs/evidence"
+          }
         },
         "additionalProperties": true
       }

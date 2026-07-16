@@ -10,8 +10,8 @@ RULE_DESCRIPTIONS = {
     "ADIP-02": "Untrusted value assigned a trusted security role",
     "ADIP-03": "Sensitive action depends on an unverified field",
     "ADIP-04": "Mixed-trust structural ambiguity",
-    "ADIP-05": "Same-context confirmation dependency",
-    "ADIP-06": "Derived value loses provenance",
+    "ADIP-05": "Non-independent verification dependency",
+    "ADIP-06": "Derived or downstream value loses provenance",
     "ADIP-07": "Mitigation lacks verification evidence",
 }
 
@@ -42,6 +42,28 @@ def _counts(report: dict[str, Any]) -> str:
     return ", ".join(present)
 
 
+def _threat_context(report: dict[str, Any]) -> tuple[list[str], list[str], list[str]]:
+    context = report.get("threat_context", {})
+    if not isinstance(context, dict):
+        return [], [], []
+    impacts = [item for item in context.get("cia_impacts", []) if isinstance(item, str)]
+    attack_paths = [
+        item for item in context.get("attack_paths", []) if isinstance(item, str)
+    ]
+    references: list[str] = []
+    for reference in context.get("external_references", []):
+        if not isinstance(reference, dict) or not isinstance(
+            reference.get("namespace"), str
+        ):
+            continue
+        references.extend(
+            f"{reference['namespace']}:{item}"
+            for item in reference.get("ids", [])
+            if isinstance(item, str)
+        )
+    return impacts, attack_paths, references
+
+
 def render_text(report: dict[str, Any]) -> str:
     lines = [
         f"MONNA ADIP Lite v{report['version']}",
@@ -49,6 +71,13 @@ def render_text(report: dict[str, Any]) -> str:
         f"Inventories: {report['inventory_count']}",
         f"Findings: {_counts(report)}",
     ]
+    impacts, attack_paths, references = _threat_context(report)
+    if impacts:
+        lines.append(f"CIA impacts: {', '.join(impacts)}")
+    if attack_paths:
+        lines.append(f"Attack paths: {', '.join(attack_paths)}")
+    if references:
+        lines.append(f"External references: {', '.join(references)}")
     if not report.get("findings"):
         lines.extend(["", "No baseline findings."])
         return "\n".join(lines)
@@ -78,8 +107,15 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Status: **{report['status']}**",
         f"- Inventories: {report['inventory_count']}",
         f"- Findings: {_counts(report)}",
-        "",
     ]
+    impacts, attack_paths, references = _threat_context(report)
+    if impacts:
+        lines.append(f"- CIA impacts: {', '.join(impacts)}")
+    if attack_paths:
+        lines.append(f"- Attack paths: {', '.join(attack_paths)}")
+    if references:
+        lines.append(f"- External references: {', '.join(references)}")
+    lines.append("")
     if not report.get("findings"):
         lines.append("No baseline findings.")
         return "\n".join(lines)
@@ -104,6 +140,11 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 
 def build_sarif(report: dict[str, Any]) -> dict[str, Any]:
+    impacts, attack_paths, external_references = _threat_context(report)
+    external_tags = [
+        f"external/taxonomy/{reference.replace(':', '/', 1)}"
+        for reference in external_references
+    ]
     used_ids = sorted({finding["id"] for finding in report.get("findings", [])})
     rules = []
     for rule_id in used_ids:
@@ -121,7 +162,12 @@ def build_sarif(report: dict[str, Any]) -> dict[str, Any]:
                 },
             }
         )
-    level_map = {"critical": "error", "high": "error", "medium": "warning", "low": "note"}
+    level_map = {
+        "critical": "error",
+        "high": "error",
+        "medium": "warning",
+        "low": "note",
+    }
     results = []
     for finding in report.get("findings", []):
         results.append(
@@ -134,13 +180,19 @@ def build_sarif(report: dict[str, Any]) -> dict[str, Any]:
                         "physicalLocation": {
                             "artifactLocation": {"uri": finding["source"]}
                         },
-                        "logicalLocations": [{"fullyQualifiedName": finding["location"]}],
+                        "logicalLocations": [
+                            {"fullyQualifiedName": finding["location"]}
+                        ],
                     }
                 ],
                 "properties": {
                     "severity": finding["severity"],
                     "recommendation": finding["recommendation"],
                     "basis": finding.get("basis", "declared"),
+                    "ciaImpacts": impacts,
+                    "attackPaths": attack_paths,
+                    "externalTaxonomyReferences": external_references,
+                    "tags": external_tags,
                 },
             }
         )
@@ -159,12 +211,19 @@ def build_sarif(report: dict[str, Any]) -> dict[str, Any]:
                     }
                 },
                 "results": results,
+                "properties": {
+                    "ciaImpacts": impacts,
+                    "attackPaths": attack_paths,
+                    "externalTaxonomyReferences": external_references,
+                },
             }
         ],
     }
 
 
-def render_report(report: dict[str, Any], output_format: str, compact: bool = False) -> str:
+def render_report(
+    report: dict[str, Any], output_format: str, compact: bool = False
+) -> str:
     if output_format == "json":
         return render_json(report, compact)
     if output_format == "text":

@@ -1,6 +1,7 @@
+
 # MONNA ADIP Framework Specification
 
-Version: 0.2.0
+Version: 0.3.0.dev0
 Status: Research Extension 01
 Claim labels: paper-derived statements are cited; original interpretations are
 marked `[MONNA-Analysis-2026]`.
@@ -18,6 +19,8 @@ The framework covers:
 - JSON, XML, DOM-like, Markdown, and custom tool-response formats
 - Metadata, identifiers, origins, URLs, tool names, execution history, and
   derived variables
+- Model-to-model handoffs and LLM judge paths
+- Outputs consumed by tools, renderers, storage, external systems, or other models
 - Read, write, click, execute, merge, send, purchase, approve, and equivalent
   actions
 
@@ -53,7 +56,8 @@ Assess the data path at four nested levels:
 4. **Value** — the content and its provenance, transformation, and validation.
 
 An action is assessed separately and linked back to the exact fields that
-provide each argument.
+provide each argument. An output sink is also assessed separately and linked
+to every field that influences the emitted value.
 
 ## 4. Seven-control protocol
 
@@ -113,15 +117,17 @@ of serialized boundaries.
 
 ### C5 — Decision Dependency Tracing
 
-Map every action parameter to its source field and record all transformations.
-For derived values, preserve the provenance of inputs.
+Map every action parameter and output sink to its source fields and record all
+transformations. For derived values and model-to-model handoffs, preserve the
+provenance and least-trusted relevant label of the inputs.
 
 **Gate C5:** An action cannot be rated controlled unless reviewers can identify
 which data caused the action and where that data originated.
 
 ### C6 — Action Integrity Gate
 
-For `high` and `critical` actions, require controls appropriate to impact:
+For `high` and `critical` actions and output sinks, require controls appropriate
+to impact:
 
 - deterministic schema and type validation
 - independent provenance verification
@@ -132,7 +138,9 @@ For `high` and `critical` actions, require controls appropriate to impact:
 - out-of-band human verification for exceptional cases
 
 User confirmation based on the same potentially corrupted agent context is not
-independent verification.
+independent verification. An LLM judge is also not independent merely because
+it is a separate call; reviewers must establish independent inputs, policy, and
+evidence.
 
 ### C7 — Mitigation and Verification Mapping
 
@@ -160,8 +168,8 @@ independent-validation formulation and control taxonomy are
 | ADIP-02 | Untrusted value assigned a trusted security role | Critical |
 | ADIP-03 | Sensitive action depends on an unverified field | High/Critical |
 | ADIP-04 | Mixed-trust structural ambiguity | Medium/High |
-| ADIP-05 | Same-context confirmation dependency | High |
-| ADIP-06 | Derived value loses provenance | High |
+| ADIP-05 | Non-independent verification dependency | High |
+| ADIP-06 | Derived or downstream value loses provenance | High |
 | ADIP-07 | Mitigation without verification evidence | Medium |
 
 Severity must be adjusted using actual action impact and reachable controls.
@@ -173,7 +181,8 @@ An assessment is incomplete without:
 
 - object and field inventory
 - trust-label rationale
-- action-to-field dependency mapping
+- action-to-field and output-to-field dependency mapping
+- verifier independence and model-to-model handoff evidence
 - format and serializer description
 - control ownership
 - verification evidence or an explicit evidence gap
@@ -187,8 +196,15 @@ An assessment is incomplete without:
 
 These states are triage outcomes, not security certifications.
 
+## 8. Threat-context interoperability
+
+Inventories may declare CIA impacts, attack paths, and identifiers from external
+taxonomies. These declarations provide reviewer context only; the Lite analyzer
+does not import external datasets, infer attack techniques, or claim runtime
+detection. See [APE Compatibility](APE-COMPATIBILITY.md) for the first public
+interoperability profile and its license boundary.
+
 ## References
 
 Choi, W. et al. *Agent Data Injection Attacks are Realistic Threats to AI
 Agents*. arXiv:2607.05120v1 (2026). https://arxiv.org/abs/2607.05120
-

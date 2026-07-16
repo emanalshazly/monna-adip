@@ -7,7 +7,9 @@
 - Trust and security-role taxonomy
 - Baseline finding IDs
 - JSON inventory schema and blank template
-- Safe synthetic example
+- Safe synthetic examples
+- Optional threat context and external taxonomy identifiers
+- Multi-model provenance and output/sink inventory fields
 - Deterministic Lite analyzer
 - Research and SecurityFortress integration maps
 
@@ -27,4 +29,6 @@ Public contributions may improve documentation, schema interoperability,
 defensive baseline checks, and safe examples. Do not submit active exploit
 payloads, unpublished vendor details, client data, or proposed changes that
 require disclosure of protected MONNA methods.
-
+External references do not move third-party taxonomy content into the Apache-2.0
+codebase. Compatibility profiles must preserve attribution, avoid endorsement
+claims, and comply with the external source's license.
