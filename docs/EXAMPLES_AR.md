@@ -66,6 +66,29 @@ monna-adip examples/code-agent/after.json --validate --format markdown
 
 النتيجة المتوقعة: `REVIEW_READY` بلا baseline findings.
 
+## 4. وكيل مراجعة متعدد النماذج
+
+### قبل المعالجة
+
+`examples/multi-model-agent/before.json`
+
+يمرر الوكيل محتوى مسترجعًا إلى نموذج آخر دون الحفاظ على سلسلة المصدر، ويرسل
+مخرجًا عالي الأثر بلا تحقق حتمي ومستقل، ويعامل LLM Judge الذي يرى نفس السياق
+كأنه مراجعة مستقلة. النتائج المتوقعة تشمل ADIP-03 وADIP-05 وADIP-06 وADIP-07.
+
+### بعد المعالجة
+
+`examples/multi-model-agent/after.json`
+
+يحافظ الوكيل على وسوم المصدر، ويتحقق من بنية حزمة المخرجات، ويستخدم Policy
+Gate خارجيًا مع دليل اختبار مستقل. النتيجة المتوقعة: `REVIEW_READY`.
+
+```bash
+monna-adip examples/multi-model-agent/after.json --validate --format text
+```
+
+معرّفات APE في المثال مراجع خارجية يحددها المراجع ولا تمثل اكتشافًا آليًا.
+
 ## ملاحظة مهمة
 
 معرّفات الأدلة داخل الأمثلة مثل `integration-suite/merge-31` توضيحية. يجب على

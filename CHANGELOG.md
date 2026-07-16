@@ -1,4 +1,3 @@
-
 # Changelog
 
 ## 0.3.0.dev0 — Unreleased
@@ -11,6 +10,7 @@
 - Preserved threat context in text, Markdown, JSON, aggregate reports, and SARIF.
 - Added independent APE Taxonomy compatibility guidance without redistributing its content.
 - Added safe multi-model before/after examples and focused regression tests.
+- Updated the Arabic documentation pack for v0.3 threat context, output sinks, and multi-model verification.
 
 ## 0.2.0 — 2026-07-15
 
