@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0.dev0 — Unreleased
+
+- Added optional CIA impacts, attack paths, and generic external taxonomy references.
+- Added output/sink inventories with exact source-field dependencies.
+- Extended ADIP-03 to high-impact output sinks.
+- Extended ADIP-05 to non-independent verification, including LLM judges.
+- Extended ADIP-06 to provenance loss across downstream model boundaries.
+- Preserved threat context in text, Markdown, JSON, aggregate reports, and SARIF.
+- Added independent APE Taxonomy compatibility guidance without redistributing its content.
+- Added safe multi-model before/after examples and focused regression tests.
+- Updated the Arabic documentation pack for v0.3 threat context, output sinks, and multi-model verification.
+
 ## 0.2.0 — 2026-07-15
 
 - Added `monna-adip generate --from mcp` to draft an inventory from an MCP tool manifest.
@@ -14,6 +26,7 @@
 - Added Python 3.11, 3.12, and 3.13 CI coverage.
 - Added before/after email-agent and code-agent examples.
 - Added a PyPI trusted-publishing workflow for tagged GitHub releases.
+- Added Arabic README, quick start, framework guide, examples, and bilingual glossary.
 
 ## 0.1.0 — 2026-07-15
 

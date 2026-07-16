@@ -26,8 +26,8 @@ different layers, not that OWASP endorses or references ADIP.
 | ADIP-02 | Untrusted value assigned a trusted security role | ASI03 Identity & Privilege Abuse | T3, T8, T9 | [SEMANTIC] |
 | ADIP-03 | Sensitive action depends on an unverified field | ASI02 Tool Misuse & Exploitation | T2 | [SEMANTIC] |
 | ADIP-04 | Mixed-trust structural ambiguity | ASI01 Agent Goal Hijack | T6, T7 | [SEMANTIC] |
-| ADIP-05 | Same-context confirmation dependency | ASI09 Human-Agent Trust Exploitation | T10, T15 | [SEMANTIC] |
-| ADIP-06 | Derived value loses provenance | ASI06 Memory & Context Poisoning | T1, T12 | [SEMANTIC] |
+| ADIP-05 | Non-independent verification dependency | ASI09 Human-Agent Trust Exploitation | T10, T15 | [SEMANTIC] |
+| ADIP-06 | Derived or downstream value loses provenance | ASI06 Memory & Context Poisoning | T1, T12 | [SEMANTIC] |
 | ADIP-07 | Mitigation lacks verification evidence | Cross-cutting (no single vector) | — | [SEMANTIC] |
 
 Notes `[MONNA-Analysis-2026]`:

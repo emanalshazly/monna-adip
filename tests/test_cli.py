@@ -17,8 +17,18 @@ def exposed_inventory():
                 "format": "json",
                 "structural_isolation": False,
                 "fields": [
-                    {"name": "id", "trust": "trusted", "origin": "backend", "security_role": "identifier"},
-                    {"name": "body", "trust": "untrusted", "origin": "user", "security_role": "content"},
+                    {
+                        "name": "id",
+                        "trust": "trusted",
+                        "origin": "backend",
+                        "security_role": "identifier",
+                    },
+                    {
+                        "name": "body",
+                        "trust": "untrusted",
+                        "origin": "user",
+                        "security_role": "content",
+                    },
                 ],
             }
         ],
@@ -37,7 +47,7 @@ class CliTests(unittest.TestCase):
         with self.assertRaises(SystemExit) as raised, redirect_stdout(stdout):
             main(["--version"])
         self.assertEqual(raised.exception.code, 0)
-        self.assertIn("0.2.0", stdout.getvalue())
+        self.assertIn("0.3.0.dev0", stdout.getvalue())
 
     def test_text_report(self):
         with tempfile.TemporaryDirectory() as directory_name:
@@ -77,7 +87,9 @@ class CliTests(unittest.TestCase):
             output = directory / "report.md"
             stdout = io.StringIO()
             with redirect_stdout(stdout):
-                code = main([str(path), "--format", "markdown", "--output", str(output)])
+                code = main(
+                    [str(path), "--format", "markdown", "--output", str(output)]
+                )
             contents = output.read_text(encoding="utf-8")
         self.assertEqual(code, 2)
         self.assertEqual(stdout.getvalue(), "")

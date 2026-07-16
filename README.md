@@ -1,7 +1,10 @@
+
 # MONNA ADIP™
 
+**English** | [العربية](README_AR.md)
+
 **Agent Data Integrity Protocol**
-Research Extension 01 · Open Core v0.2.0
+Research Extension 01 · Open Core v0.3.0.dev0
 
 MONNA ADIP is a defensive framework and command-line analyzer for finding
 trust-boundary failures inside AI-agent data. It audits tool responses,
@@ -14,7 +17,18 @@ are Realistic Threats to AI Agents* (arXiv:2607.05120v1, 2026). It is an
 independent defensive extension by MONNA Consulting™, not an official artifact
 of the paper and not endorsed by its authors.
 
-## What v0.2 adds
+## What v0.3 development adds
+
+- Optional threat context with CIA impacts, attack paths, and external taxonomy references
+- Multi-model provenance checks for downstream LLM handoffs
+- Output/sink integrity checks for execution, storage, transmission, rendering, and model forwarding
+- Independent-verification modeling for LLM judges, humans, deterministic gates, and external services
+- External context preserved in JSON, text, Markdown, and SARIF
+- Safe multi-model before/after examples
+
+See [APE compatibility guidance](docs/APE-COMPATIBILITY.md). The integration is independent, identifier-only, and does not redistribute the external taxonomy.
+
+## What v0.2 added
 
 - All seven public controls implemented, including ADIP-07 evidence checks
 - Optional JSON Schema validation while keeping the core dependency-free
@@ -24,6 +38,7 @@ of the paper and not endorsed by its authors.
 - Python 3.11–3.13 CI matrix
 - Before/after email-agent and code-agent examples
 - Trusted-publishing workflow for PyPI releases
+- Arabic README, quick start, framework guide, examples, and terminology glossary
 
 ## Why this exists
 
@@ -46,6 +61,8 @@ MONNA ADIP operationalizes that problem through seven controls:
 See [the framework specification](docs/FRAMEWORK.md) for the full open-core
 method, and the [OWASP mapping](docs/OWASP-MAPPING.md) for how each control
 relates to the OWASP Top 10 for Agentic Applications 2026 (ASI01–ASI10).
+The [APE compatibility guide](docs/APE-COMPATIBILITY.md) explains the optional
+attack-context reference layer and its attribution boundary.
 
 ## Install
 
@@ -102,10 +119,22 @@ monna-adip generate --from mcp examples/mcp-toolset/manifest.json --output draft
 JSON remains the default for backward-compatible piping. See the
 [CLI reference](docs/CLI.md) for formats and exit codes.
 
+## Arabic documentation
+
+- [Arabic README — الواجهة العربية](README_AR.md)
+- [Arabic quick start — البداية السريعة](docs/QUICKSTART_AR.md)
+- [Arabic framework guide — مرجع الإطار](docs/FRAMEWORK_AR.md)
+- [Arabic examples — شرح الأمثلة](docs/EXAMPLES_AR.md)
+- [Arabic–English glossary — قاموس المصطلحات](docs/GLOSSARY_AR.md)
+
+Machine-readable identifiers, JSON keys, trust values, CLI flags, and SARIF
+rule IDs remain in English to preserve one interoperable schema.
+
 ## Example cases
 
 - [Email agent: before and after](examples/email-agent/)
 - [Code review agent: before and after](examples/code-agent/)
+- [Multi-model review agent: before and after](examples/multi-model-agent/)
 - [Examples guide](docs/EXAMPLES.md)
 
 The examples are synthetic and defensive. They do not include exploit payloads.

@@ -1,3 +1,4 @@
+
 # CLI Reference
 
 ## Synopsis
@@ -43,9 +44,13 @@ The exit code describes the aggregate status across all scanned inventories.
 
 ## JSON compatibility
 
-The v0.2 aggregate retains `status`, `finding_counts`, and `findings` at the
+The v0.3 aggregate retains `status`, `finding_counts`, and `findings` at the
 top level. Every finding now includes `source`, and the report adds
 `inventory_count` plus per-inventory summaries.
+
+The aggregate also carries optional `threat_context` with CIA impacts, attack
+paths, and reviewer-supplied external identifiers. These values are declarations,
+not analyzer-inferred attack detections.
 
 Every finding also carries a `basis` label stating its epistemic ground:
 `structural` means the analyzer observed the problem directly in the
@@ -92,4 +97,6 @@ architecture evidence gap; it is not proof of exploitability.
 
 SARIF rule metadata tags each control with its primary OWASP Top 10 for
 Agentic Applications 2026 vector (`external/owasp-asi/ASI0X`); see the
-[OWASP mapping](OWASP-MAPPING.md).
+[OWASP mapping](OWASP-MAPPING.md). Reviewer-supplied external taxonomy IDs
+are preserved in SARIF run and result properties; see
+[APE compatibility](APE-COMPATIBILITY.md).
