@@ -119,6 +119,8 @@ monna-adip generate --from mcp examples/mcp-toolset/manifest.json --output draft
 JSON remains the default for backward-compatible piping. See the
 [CLI reference](docs/CLI.md) for formats and exit codes.
 
+For a short, reproducible quality-reference walkthrough, use the [local demo path](docs/DEMO.md). It is not a hosted deployment or a production validation claim.
+
 ## Arabic documentation
 
 - [Arabic README — الواجهة العربية](README_AR.md)
